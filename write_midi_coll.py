@@ -9,8 +9,12 @@ from music21 import *
 # tick of a quarter note
 tick_quarter = 12
 
-def normalize_score(score: stream.Score):
-    """ normalize all major key to E-, and all minor key to Cm """
+def normalize_score(score: stream.Score, to_tonic: str = 'E-'):
+    """ normalize key to 3flats (Cm or EbM)"""
+    keys = score.getElementsByClass(key.KeySignature)
+    starting_tonic = keys[0].tonic.name
+    i = interval.Interval(note.Note(starting_tonic), note.Note(to_tonic))
+    score.transpose(i, inPlace=True)
 
 def get_onset_tick(note: note.Note) -> int:
     # 1 => first beat => onset = 0 (smallest value)
@@ -37,9 +41,9 @@ def parse_file(midi_file: str, coll_dir: str = "midi_coll", normalize_key: bool 
 
         
     score = converter.parse(midi_file, format='midi', quarterLengthDivisors=[12,16])
+    score = score.flatten()
     if normalize_key:
         normalize_score(score)
-    score = score.flatten()
 
     for t in score.getElementsByClass(meter.TimeSignature):
         num_beats = t.numerator
