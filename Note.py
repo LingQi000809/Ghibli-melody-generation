@@ -6,6 +6,9 @@ class Note:
         self.dur = dur
         self.vel = vel
 
+    def update_pitch(self, new_pitch: int):
+        self.pitch = new_pitch
+
     def update_dur(self, new_dur: int):
         self.dur = new_dur
 

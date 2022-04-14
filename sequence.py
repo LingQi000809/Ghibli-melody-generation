@@ -9,8 +9,7 @@ from tidyup_coll import tidy_up
 
 # tick of a quarter note
 tick_quarter = 12
-measure_tick = tick_quarter * 4 # 48
-default_dur = measure_tick
+scale_tones = [0, 2, 3, 5, 7, 8, 10]
 
 
 def main(args):
@@ -22,6 +21,10 @@ def main(args):
     end_idx = args.endindex
 
     endpitch = args.endpitch
+
+    time_sig = args.timesig
+    measure_tick = tick_quarter * time_sig
+    default_dur = measure_tick
 
     notes = []
 
@@ -53,6 +56,9 @@ def main(args):
         
         # change pitch level
         if note.pitch > 0:
+            # note_tone = note.pitch % 12
+            # if note_tone not in scale_tones:
+            #     note.update_pitch()
             interval_to_endpitch = note.pitch - old_endpitch
             new_pitch = interval_to_endpitch + endpitch
         else: 
@@ -90,6 +96,11 @@ if __name__ == "__main__":
         "endpitch",
         type=int,
         help="the new ending note of the sequence"
+    )
+    parser.add_argument(
+        "timesig",
+        type=int,
+        help="the time signature beat count"
     )
 
     args = parser.parse_args()

@@ -7,11 +7,13 @@ from Note import Note
 
 # tick of a quarter note
 tick_quarter = 12
-measure_tick = tick_quarter * 4 # 48
-default_dur = measure_tick
 
-def tidy_up(coll_filepath: str, start_idx: int, 
+def tidy_up(coll_filepath: str, start_idx: int, time_sig: int,
     coll_basename: str = None):
+
+    measure_tick = tick_quarter * time_sig
+    default_dur = measure_tick
+
     coll_dirname = os.path.dirname(coll_filepath)
     if not coll_basename:
         coll_basename = os.path.basename(coll_filepath)
@@ -120,7 +122,8 @@ def tidy_up(coll_filepath: str, start_idx: int,
 def main(args):
     coll_filepath = args.filepath
     start_idx = args.startindex
-    tidy_up(coll_filepath, start_idx)
+    time_sig = args.timesig
+    tidy_up(coll_filepath, start_idx, time_sig)
 
     
 if __name__ == "__main__":
@@ -134,6 +137,11 @@ if __name__ == "__main__":
         "startindex",
         type=int,
         help="the starting index of the statement to tidy up"
+    )
+    parser.add_argument(
+        "timesig",
+        type=int,
+        help="the time signature beat count"
     )
 
     args = parser.parse_args()

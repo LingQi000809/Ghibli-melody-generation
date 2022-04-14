@@ -9,8 +9,6 @@ from tidyup_coll import tidy_up
 
 # tick of a quarter note
 tick_quarter = 12
-measure_tick = tick_quarter * 4 # 48
-default_dur = measure_tick
 
 
 def main(args):
@@ -20,6 +18,10 @@ def main(args):
 
     start_idx = args.startindex
     end_idx = args.endindex
+
+    time_sig = args.timesig
+    measure_tick = tick_quarter * time_sig
+    default_dur = measure_tick
 
     notes = []
 
@@ -73,6 +75,11 @@ if __name__ == "__main__":
         "endindex",
         type=int,
         help="the ending index (exclusive) of the statement to repeat"
+    )
+    parser.add_argument(
+        "timesig",
+        type=int,
+        help="the time signature beat count"
     )
 
     args = parser.parse_args()
