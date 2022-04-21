@@ -57,7 +57,7 @@ def main(args):
                 f.write(f"{note.index}, {note.onset} {note.pitch} {note.dur} {note.vel};\n")
 
     # tidy up the collection from the note before the added repetition
-    tidy_up(coll_filepath, end_idx - 1, coll_basename="rand_coll")
+    tidy_up(coll_filepath, end_idx - 1, args.timesig, coll_basename="rand_coll")
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -9,6 +9,8 @@ num_pitches = 108
 tick_quarter = 12
 num_onsets = tick_quarter * 4
 
+parent_dir = os.path.dirname(os.path.abspath(__file__))
+
 class Markov:
     def __init__(self, num_states: int):
         # [
@@ -29,13 +31,17 @@ class Markov:
             if i == 0:
                 # starting with
                 self.init_count[num] += 1
+                # print("start with ", num)
             else:
                 # last -> num: 1 more occurence
                 self.transition_count[last][num] += 1
+                # print(f"add one to [{last}][{num}] (last;cur)")
             last = num
         self.num_Tunes += 1
     
     def write_transitions(self, to_fname: str):
+        # write to file under model directory
+        to_fname = os.path.join(parent_dir, to_fname)
         with open(to_fname, "w") as pf:
             # reset, states, build
             pf.write(f"reset\nstates {self.num_states}\nbuild")
@@ -54,21 +60,26 @@ class Markov:
                 for count in state:
                     prob = count / total
                     pf.write(f" {prob}")
+        print("written ", to_fname)
 
 def main(args):
     mood = args.mood
-    isMajor = args.mode == "major"
-    mode = "+" if isMajor else "-"
+    mode = ["+", "-"]
+    if args.mode == "major":
+        mode = ["+"]
+    elif args.mode == "minor":
+        mode = ["-"]
+    
     timesig = args.timesig
 
-    coll_dir = "midi_coll"
+    coll_dir = os.path.join(parent_dir, "midi_coll")
 
     # initialize pitch and onset markovs
     pitch_markov = Markov(num_pitches)
     onset_markov = Markov(num_onsets)
 
     # go through the midi directory
-    files = os.listdir(os.path.join(coll_dir,mood))
+    files = os.listdir(os.path.join(coll_dir, mood))
     for f in files:
         # look at valid txt files
         if f.endswith('.txt') and not f.startswith('.'):
@@ -77,7 +88,7 @@ def main(args):
             fmode = fname[-2]
             ftime = int(fname[-1])
             # look at tunes with the wanted mode and timesig
-            if mode == fmode and timesig == ftime:
+            if fmode in mode and ftime == timesig:
                 print(f"{f}")
                 pitches = []
                 onsets = []
@@ -89,6 +100,8 @@ def main(args):
                         pitch = int(props[2])
                         onsets.append(onset)
                         pitches.append(pitch)
+                # print(pitches)
+                # print(onsets)
                 pitch_markov.add_transitions(pitches)
                 onset_markov.add_transitions(onsets)
     # after adding transitions from each file of the wanted categories, output the transition table

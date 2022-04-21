@@ -9,7 +9,9 @@ from Note import Note
 tick_quarter = 12
 
 def tidy_up(coll_filepath: str, start_idx: int, time_sig: int,
-    coll_basename: str = None):
+    coll_basename: str = None, verbose: bool = False):
+    if verbose:
+        print("start index to tidy up ", start_idx)
 
     measure_tick = tick_quarter * time_sig
     default_dur = measure_tick
@@ -36,8 +38,13 @@ def tidy_up(coll_filepath: str, start_idx: int, time_sig: int,
             dur = int(dur)
             vel = int(vel[:-1])
 
+            if verbose:
+                print(f"on index {i}. onset: {onset}. pitch: {pitch}. dur: {dur}. vel: {vel}")
+
             # for already tidy-ed note (from last tidyup)
             if i < start_idx:
+                if verbose:
+                    print("not in the scope of tidying up")
                 if tidy_notes and onset == 0:
                     groups.append(group_num)
                     group_num = 0 
@@ -50,8 +57,12 @@ def tidy_up(coll_filepath: str, start_idx: int, time_sig: int,
             if tidy_notes:
                 last_note = tidy_notes[i + index_offset -1]
                 last_onset = last_note.onset
+                if verbose:
+                    print(f"last onset: {last_onset}")
                 # condition 1: new measure; no carry-over
                 if onset == 0:
+                    if verbose:
+                        print("starting a new measure")
                     # 1) last note dur
                     if last_note.dur > 0:
                         last_note.update_dur(measure_tick - last_onset)
@@ -61,7 +72,11 @@ def tidy_up(coll_filepath: str, start_idx: int, time_sig: int,
 
                 # condition 2 (TIE): new measure; carry-over
                 elif onset <= last_onset:
+                    if verbose:
+                        print("new measure with a tie")
                     if last_note.dur > 0:
+                        if verbose:
+                            print("creating a tie")
                         # 1) last note dur in last measure
                         last_note.update_dur(measure_tick - last_onset)
                         # 2) new note 1: tie (last measure)
@@ -71,6 +86,8 @@ def tidy_up(coll_filepath: str, start_idx: int, time_sig: int,
                         tidy_notes.append(Note(i + index_offset , 0, last_note.pitch, onset, last_note.vel))
                         index_offset += 1
                     else:
+                        if verbose:
+                            print("last note is a rest. creating a rest in the current measure.")
                         # last note was a rest in the previous measure
                         # we should add a rest in front of the current note (as its onset is not 0)
                         tidy_notes.append(Note(i + index_offset, 0, 0, -1 * onset, 0))
@@ -82,10 +99,16 @@ def tidy_up(coll_filepath: str, start_idx: int, time_sig: int,
 
                 # condition 3: same measure
                 else: # onset > last_onset
+                    if verbose:
+                        print("in the same measure as last note")
                     # just update the dur of last note
                     if last_note.dur > 0:
                         last_note.update_dur(onset - last_onset)
-            
+                        if verbose:
+                            print(f"last note is not a rest. ")
+                if verbose:
+                    print(f"last note dur updated to: {last_note.dur}")
+
             # if this is the first note...
             else:
                 # add rests at the start
